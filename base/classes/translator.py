@@ -13,8 +13,8 @@ class Translator:
         return text
 
     def translate_pl(self, text_list):
-        t=TranslateLibTranslator(to_lang='pl')
+        t = TranslateLibTranslator(to_lang='pl')
         translated_text = []
-        for text in text_list:
-            translated_text.append(t.translate(text))
+        for i in range(len(text_list)):
+            translated_text.append(t.translate(text_list[i]))
         return translated_text
