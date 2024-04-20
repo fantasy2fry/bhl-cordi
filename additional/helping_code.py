@@ -93,13 +93,12 @@ class DependencyMapper(ast.NodeVisitor):
 
                     tab_file_name.append(f"File analysis: {file_path}")
 
-                    # print(f"Analiza pliku: {file_path}")
+                    #print(f"Analiza pliku: {file_path}")
 
                     self.analyze_file(file_path)
         self.check_diamond_inheritance()
         self.report_super_usage()
         self.check_polymorphism()
-        self.check_static_variables()
 
     def check_diamond_inheritance(self):
         for base_class, derived_classes in self.inheritance_tree.items():
@@ -108,18 +107,18 @@ class DependencyMapper(ast.NodeVisitor):
                 for derived in derived_classes:
                     common_bases.update(self.classes[derived]["base_classes"])
                 if base_class in common_bases:
-                    tab_topic.append("Diamond inheritance problem")
-                    tab_description.append(
-                        f"Diamond inheritance detected: {base_class} is a common base class for {derived_classes}")
 
-                    # print(f"Diamond inheritance detected: {base_class} is a common base class for {derived_classes}")
+                    tab_topic.append("Diamond inheritance problem")
+                    tab_description.append(f"Diamond inheritance detected: {base_class} is a common base class for {derived_classes}")
+
+                    #print(f"Diamond inheritance detected: {base_class} is a common base class for {derived_classes}")
 
     def report_super_usage(self):
         for class_name, class_info in self.classes.items():
             if not class_info["uses_super"] and class_info["base_classes"]:
+
                 tab_topic.append("Not using the super() function")
-                tab_description.append(
-                    f"The {class_name} class inherits from {class_info['base_classes']} and does not use super() in the constructor.")
+                tab_description.append(f"The {class_name} class inherits from {class_info['base_classes']} and does not use super() in the constructor.")
 
                 # print(
                 #     f"The {class_name} class inherits from {class_info['base_classes']} and does not use super() in the constructor.")
@@ -133,32 +132,11 @@ class DependencyMapper(ast.NodeVisitor):
                     derived_methods = self.class_methods[class_name]
                     for method in base_methods:
                         if method not in derived_methods:
+
                             tab_topic.append("Problem with the polymorphism")
-                            tab_description.append(
-                                f"The {class_name} class does not override the '{method}' method of the {base} base class")
+                            tab_description.append(f"The {class_name} class does not override the '{method}' method of the {base} base class")
 
-                            # print(f"Klasa {class_name} nie przesłania metody '{method}' z klasy bazowej {base}")
-
-    def visit_Assign(self, node):
-        # Jeśli obecnie przetwarzana jest klasa i przypisanie odbywa się poza funkcją (czyli na poziomie klasy)
-        if isinstance(node.targets[0], ast.Name) and self.current_class:
-            # Jeśli zmienna klasy (statyczna) została przypisana
-            var_name = node.targets[0].id
-            if "class_vars" not in self.classes[self.current_class]:
-                self.classes[self.current_class]["class_vars"] = set()
-            self.classes[self.current_class]["class_vars"].add(var_name)
-        self.generic_visit(node)
-
-    def check_static_variables(self):
-        for class_name, class_info in self.classes.items():
-            if "class_vars" in class_info:
-                for var in class_info["class_vars"]:
-                    tab_topic.append(f"Static variable issue in class {class_name}")
-                    tab_description.append(
-                        f"Class '{class_name}' defines a static variable '{var}', which may cause side effects if modified across instances.")
-        # Jeśli potrzebujesz, wyświetl zgromadzone informacje
-        for topic, description in zip(tab_topic, tab_description):
-            print(f"{topic}: {description}")
+                            #print(f"Klasa {class_name} nie przesłania metody '{method}' z klasy bazowej {base}")
 
 
 if __name__ == "__main__":
@@ -166,10 +144,14 @@ if __name__ == "__main__":
     directory_path = '../../additional'  # zmień na ścieżkę do twojego folderu testowego
     mapper.analyze_directory(directory_path)
 
-    from translator import Translator
+#print(tab_file_name)
+#print(tab_topic)
+print(tab_topic)
 
-    t = Translator("ru")
+from translator import Translator
 
-    # Wypisywanie zebranych informacji
-    for topic, description in zip(tab_topic, tab_description):
-        print(f"{topic}: {description}")
+t= Translator("ru")
+
+print(t.translate(tab_topic))
+
+
