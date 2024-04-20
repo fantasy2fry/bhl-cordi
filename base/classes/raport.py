@@ -3,9 +3,6 @@ from reportlab.pdfgen import canvas
 
 
 class Raport:
-    def __init__(self, folder):
-        self.folder = folder
-
     def create_pdf_from_text(self, tab_topic, tab_description, filename):
         tab_description_dict = {}
         for topic, desc in zip(tab_topic, tab_description):
@@ -70,3 +67,11 @@ class Raport:
     def get_text_width(self, text):
         c = canvas.Canvas("tmp.pdf")
         return c.stringWidth(text, "Helvetica", 12)
+
+if __name__ == "__main__":
+    from analyze_oop import *
+    mapper = DependencyMapper()
+    directory_path = '../../additional'  # zmień na ścieżkę do twojego folderu testowego
+    mapper.analyze_directory(directory_path)
+    raport = Raport()
+    raport.create_pdf_from_text(tab_topic, tab_description, "raport.pdf")
