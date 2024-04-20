@@ -10,3 +10,10 @@ class Raport:
         self.text.append(f"  {tb1}")
         self.text.append(f"  {tb2}")
         self.text.append("")
+
+
+    def create_raport(self):
+        with open(f"{self.folder}/raport.txt", "w") as file:
+            for line in self.text:
+                file.write(line + "\n")
+        print(f"Raport został zapisany w folderze: {self.folder}")
