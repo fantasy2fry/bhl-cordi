@@ -1,5 +1,7 @@
+from translate import Translator as TranslateLibTranslator
 
-class Translate:
+
+class Translator:
     def __init__(self, lang):
         self.lang = lang
 
@@ -11,4 +13,4 @@ class Translate:
         return text
 
     def translate_pl(self, text):
-        pass
+        return TranslateLibTranslator(to_lang='pl').translate(text)
