@@ -47,6 +47,7 @@ class DependencyMapper(ast.NodeVisitor):
         self.current_class = None
         self.inheritance_tree = {}
         self.class_methods = {}
+        self.abstract_classes = {}
 
     def visit_ImportFrom(self, node):
         for alias in node.names:
@@ -54,17 +55,34 @@ class DependencyMapper(ast.NodeVisitor):
 
     def visit_ClassDef(self, node):
         bases = [base.id for base in node.bases if isinstance(base, ast.Name)]
+        abstract_methods = []
+        is_abstract = False
+
+        for item in node.body:
+            if isinstance(item, ast.FunctionDef):
+                for decorator in item.decorator_list:
+                    if isinstance(decorator, ast.Name) and decorator.id == 'abstractmethod':
+                        abstract_methods.append(item.name)
+                        is_abstract = True
+
         self.classes[node.name] = {
             "file": self.current_file,
             "base_classes": bases,
+            "methods": [item.name for item in node.body if isinstance(item, ast.FunctionDef)],
+            "abstract_methods": abstract_methods,
+            "is_abstract": is_abstract,
             "uses_super": False
         }
-        self.class_methods[node.name] = [n.name for n in node.body if isinstance(n, ast.FunctionDef)]
+
+        if is_abstract:
+            self.abstract_classes[node.name] = self.classes[node.name]
+
         for base in bases:
             if base in self.inheritance_tree:
                 self.inheritance_tree[base].append(node.name)
             else:
                 self.inheritance_tree[base] = [node.name]
+
         self.current_class = node.name
         self.generic_visit(node)
         self.current_class = None
@@ -99,10 +117,23 @@ class DependencyMapper(ast.NodeVisitor):
         self.report_super_usage()
         self.check_polymorphism()
         self.check_static_variables()
-        self.check_complex_inheritance()  # Upewnij się, że ta linia istnieje
+        self.check_complex_inheritance()
+        self.check_abstract_implementations()  # Upewnij się, że ta linia istnieje
 
         for topic, description in zip(tab_topic, tab_description):
             print(f"{topic}: {description}")
+
+    def check_abstract_implementations(self):
+        for class_name, class_info in self.classes.items():
+            if not class_info['is_abstract']:
+                for base in class_info['base_classes']:
+                    if base in self.abstract_classes:
+                        missing_methods = [method for method in self.abstract_classes[base]['abstract_methods'] if
+                                           method not in class_info['methods']]
+                        if missing_methods:
+                            tab_topic.append("Missing abstract method implementations")
+                            tab_description.append(
+                                f"Class '{class_name}' does not implement all abstract methods from its base class '{base}'. Missing methods: {', '.join(missing_methods)}")
 
     def check_diamond_inheritance(self):
         for base_class, derived_classes in self.inheritance_tree.items():
@@ -113,7 +144,7 @@ class DependencyMapper(ast.NodeVisitor):
                 if base_class in common_bases:
                     tab_topic.append("Diamond inheritance problem")
                     tab_description.append(
-                        f"Diamond inheritance detected: {base_class} is a common base class for {derived_classes}")
+                        f"{base_class} is a common base class for {derived_classes}")
 
                     # print(f"Diamond inheritance detected: {base_class} is a common base class for {derived_classes}")
 
