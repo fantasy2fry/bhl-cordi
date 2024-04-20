@@ -97,7 +97,9 @@ class DependencyMapper(ast.NodeVisitor):
         self.generic_visit(node)
 
     def analyze_file(self, file_path):
+
         self.current_file = file_path
+
         with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
             tree = ast.parse(content)
@@ -108,6 +110,9 @@ class DependencyMapper(ast.NodeVisitor):
             for file in files:
                 if file.endswith('.py'):
                     self.current_file = os.path.join(root, file)
+
+                    tab_file_name.append(str(file))
+
                     with open(self.current_file, 'r', encoding='utf-8') as file:
                         content = file.read()
                         tree = ast.parse(content)
@@ -220,7 +225,8 @@ if __name__ == "__main__":
     directory_path = '../../additional'  # zmień na ścieżkę do twojego folderu testowego
     mapper.analyze_directory(directory_path)
 
+    print(tab_topic)
     # from translator import Translator
-
+    print(tab_file_name)
     # print(tab_topic)
     # print(tab_description)
