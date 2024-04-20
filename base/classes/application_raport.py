@@ -36,6 +36,10 @@ def create_app(language, problems_list, get_problems_function):
     problems_label = ttk.Label(problems_frame, text=", ".join(problems_list), anchor="w")
     problems_label.pack(fill='x')
 
+    # Linia odstępu między listą tematów a łączną liczbą problemów
+    space_label = ttk.Label(problems_frame, text="\n", anchor="w")
+    space_label.pack(fill='x')
+
     problems_dict = get_problems_function()
     total_problems = sum(problems_dict.values())
 
