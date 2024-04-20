@@ -2,9 +2,6 @@ import os
 
 
 class FileSearch:
-    def __is_python_file(self, path):
-        return path.lower().endswith('.py')
-
     def __is_directory(self, path):
         return os.path.isdir(path)
 
@@ -23,9 +20,7 @@ class FileSearch:
         return python_files
 
     def get_files(self, path):
-        if self.__is_python_file(path):
-            return [path]
-        elif self.__is_directory(path):
+        if self.__is_directory(path):
             return self.__get_python_files(path)
         else:
             return []
