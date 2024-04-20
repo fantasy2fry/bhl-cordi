@@ -89,18 +89,20 @@ class DependencyMapper(ast.NodeVisitor):
         for root, dirs, files in os.walk(directory):
             for file in files:
                 if file.endswith('.py'):
-                    file_path = os.path.join(root, file)
+                    self.current_file = os.path.join(root, file)
+                    with open(self.current_file, 'r', encoding='utf-8') as file:
+                        content = file.read()
+                        tree = ast.parse(content)
+                        self.visit(tree)
 
-                    tab_file_name.append(f"File analysis: {file_path}")
-
-                    # print(f"Analiza pliku: {file_path}")
-
-                    self.analyze_file(file_path)
         self.check_diamond_inheritance()
         self.report_super_usage()
         self.check_polymorphism()
         self.check_static_variables()
-        self.check_complex_inheritance()
+        self.check_complex_inheritance()  # Upewnij się, że ta linia istnieje
+
+        for topic, description in zip(tab_topic, tab_description):
+            print(f"{topic}: {description}")
 
     def check_diamond_inheritance(self):
         for base_class, derived_classes in self.inheritance_tree.items():
@@ -158,24 +160,25 @@ class DependencyMapper(ast.NodeVisitor):
                     tab_description.append(
                         f"Class '{class_name}' defines a static variable '{var}', which may cause side effects if modified across instances.")
         # Jeśli potrzebujesz, wyświetl zgromadzone informacje
-        for topic, description in zip(tab_topic, tab_description):
-            print(f"{topic}: {description}")
+        # for topic, description in zip(tab_topic, tab_description):
+        #     print(f"{topic}: {description}")
 
     def check_complex_inheritance(self):
         for class_name, class_info in self.classes.items():
             base_classes = class_info["base_classes"]
-            inheritance_depth = self.get_inheritance_depth(class_name, base_classes, 0)
-            if inheritance_depth > 2:  # Ustal maksymalną dozwoloną głębokość dziedziczenia
+            inheritance_depth = self.get_inheritance_depth(class_name, base_classes,
+                                                           1)  # Start z 1, ponieważ klasa już istnieje
+            if inheritance_depth > 2:  # Maksymalna dozwolona głębokość
                 tab_topic.append("Complex inheritance hierarchy")
                 tab_description.append(
                     f"Class '{class_name}' has a complex inheritance hierarchy with depth of {inheritance_depth}, which may complicate the codebase.")
 
     def get_inheritance_depth(self, class_name, base_classes, current_depth):
-        if not base_classes or class_name not in self.inheritance_tree:
+        if not base_classes:
             return current_depth
         max_depth = current_depth
         for base in base_classes:
-            if base in self.inheritance_tree:  # Sprawdzanie, czy klasa bazowa istnieje w drzewie
+            if base in self.classes and base in self.inheritance_tree:  # Upewnij się, że klasa bazowa jest znana i zarejestrowana
                 new_depth = self.get_inheritance_depth(base, self.classes[base]["base_classes"], current_depth + 1)
                 max_depth = max(max_depth, new_depth)
         return max_depth
@@ -186,11 +189,7 @@ if __name__ == "__main__":
     directory_path = '../../additional'  # zmień na ścieżkę do twojego folderu testowego
     mapper.analyze_directory(directory_path)
 
-    from translator import Translator
+    # from translator import Translator
 
-    t = Translator("ru")
-    tab_description = t.translate(tab_description)
-    tab_topic = t.translate(tab_topic)
-    # Wypisywanie zebranych informacji
-    for topic, description in zip(tab_topic, tab_description):
-        print(f"{topic}: {description}")
+    # print(tab_topic)
+    # print(tab_description)
