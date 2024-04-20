@@ -68,8 +68,10 @@ class Raport:
         c = canvas.Canvas("tmp.pdf")
         return c.stringWidth(text, "Helvetica", 12)
 
+
 if __name__ == "__main__":
     from analyze_oop import *
+
     mapper = DependencyMapper()
     directory_path = '../../additional'  # zmień na ścieżkę do twojego folderu testowego
     mapper.analyze_directory(directory_path)

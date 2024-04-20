@@ -192,7 +192,7 @@ class DependencyMapper(ast.NodeVisitor):
         for class_name, class_info in self.classes.items():
             if "class_vars" in class_info:
                 for var in class_info["class_vars"]:
-                    tab_topic.append(f"Static variable issue in class {class_name}")
+                    tab_topic.append(f"Static variable issue")
                     tab_description.append(
                         f"Class '{class_name}' defines a static variable '{var}', which may cause side effects if modified across instances.")
         # Jeśli potrzebujesz, wyświetl zgromadzone informacje
@@ -227,6 +227,6 @@ if __name__ == "__main__":
 
     print(tab_topic)
     # from translator import Translator
-    print(tab_file_name)
+    #print(tab_file_name)
     # print(tab_topic)
     # print(tab_description)
