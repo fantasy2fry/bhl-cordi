@@ -100,6 +100,7 @@ class DependencyMapper(ast.NodeVisitor):
         self.report_super_usage()
         self.check_polymorphism()
         self.check_static_variables()
+        self.check_complex_inheritance()
 
     def check_diamond_inheritance(self):
         for base_class, derived_classes in self.inheritance_tree.items():
@@ -159,6 +160,25 @@ class DependencyMapper(ast.NodeVisitor):
         # Jeśli potrzebujesz, wyświetl zgromadzone informacje
         for topic, description in zip(tab_topic, tab_description):
             print(f"{topic}: {description}")
+
+    def check_complex_inheritance(self):
+        for class_name, class_info in self.classes.items():
+            base_classes = class_info["base_classes"]
+            inheritance_depth = self.get_inheritance_depth(class_name, base_classes, 0)
+            if inheritance_depth > 2:  # Ustal maksymalną dozwoloną głębokość dziedziczenia
+                tab_topic.append("Complex inheritance hierarchy")
+                tab_description.append(
+                    f"Class '{class_name}' has a complex inheritance hierarchy with depth of {inheritance_depth}, which may complicate the codebase.")
+
+    def get_inheritance_depth(self, class_name, base_classes, current_depth):
+        if not base_classes or class_name not in self.inheritance_tree:
+            return current_depth
+        max_depth = current_depth
+        for base in base_classes:
+            if base in self.inheritance_tree:  # Sprawdzanie, czy klasa bazowa istnieje w drzewie
+                new_depth = self.get_inheritance_depth(base, self.classes[base]["base_classes"], current_depth + 1)
+                max_depth = max(max_depth, new_depth)
+        return max_depth
 
 
 if __name__ == "__main__":
