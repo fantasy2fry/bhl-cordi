@@ -189,7 +189,8 @@ if __name__ == "__main__":
     from translator import Translator
 
     t = Translator("ru")
-
+    tab_description = t.translate(tab_description)
+    tab_topic = t.translate(tab_topic)
     # Wypisywanie zebranych informacji
     for topic, description in zip(tab_topic, tab_description):
         print(f"{topic}: {description}")
