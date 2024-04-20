@@ -76,5 +76,5 @@ def analyze_path(path):
 
 
 # Przykład użycia:
-path = 'C:/Users/igorr/PycharmProjects/cordi-project/tester_code.py'
+path = 'tester_code.py'
 analyze_path(path)
