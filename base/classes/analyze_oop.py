@@ -2,8 +2,15 @@ import ast
 import os
 
 
+class AnalyseOOP:
+    def __init__(self):
+        self.tab_1 = []
+
+
 class HermetyzacjaVisitor(ast.NodeVisitor):
     """Klasa odwiedzająca węzły AST i sprawdzająca hermetyzację zmiennych klasowych."""
+
+    tab_helper = []
 
     def visit_ClassDef(self, node):
         print(f"Analiza klasy {node.name}:")
@@ -39,6 +46,7 @@ class DependencyMapper(ast.NodeVisitor):
         self.classes = {}
         self.current_class = None
         self.inheritance_tree = {}
+        self.class_methods = {}
 
     def visit_ImportFrom(self, node):
         for alias in node.names:
@@ -51,6 +59,7 @@ class DependencyMapper(ast.NodeVisitor):
             "base_classes": bases,
             "uses_super": False
         }
+        self.class_methods[node.name] = [n.name for n in node.body if isinstance(n, ast.FunctionDef)]
         for base in bases:
             if base in self.inheritance_tree:
                 self.inheritance_tree[base].append(node.name)
@@ -83,9 +92,9 @@ class DependencyMapper(ast.NodeVisitor):
                     file_path = os.path.join(root, file)
                     print(f"Analiza pliku: {file_path}")
                     self.analyze_file(file_path)
-
         self.check_diamond_inheritance()
         self.report_super_usage()
+        self.check_polymorphism()
 
     def check_diamond_inheritance(self):
         for base_class, derived_classes in self.inheritance_tree.items():
@@ -101,6 +110,17 @@ class DependencyMapper(ast.NodeVisitor):
             if not class_info["uses_super"] and class_info["base_classes"]:
                 print(
                     f"Klasa {class_name} dziedziczy po {class_info['base_classes']} i nie używa super() w konstruktorze.")
+
+    def check_polymorphism(self):
+        for class_name, class_info in self.classes.items():
+            base_classes = class_info["base_classes"]
+            for base in base_classes:
+                if base in self.class_methods:
+                    base_methods = self.class_methods[base]
+                    derived_methods = self.class_methods[class_name]
+                    for method in base_methods:
+                        if method not in derived_methods:
+                            print(f"Klasa {class_name} nie przesłania metody '{method}' z klasy bazowej {base}")
 
 
 if __name__ == "__main__":
