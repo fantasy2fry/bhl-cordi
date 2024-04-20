@@ -9,9 +9,10 @@ class File:
         self.content = None
 
     def parse(self):
-        self.converter = astc.PythonASTConverter(self.file_path)
-        self.content = self.converter.convert_to_ast()
-        self.if_parsed = True
+        if not self.if_parsed:
+            self.converter = astc.PythonASTConverter(self.file_path)
+            self.content = self.converter.convert_to_ast()
+            self.if_parsed = True
 
     def analyze_oop(self):
         pass
