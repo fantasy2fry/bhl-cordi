@@ -12,5 +12,9 @@ class Translator:
             return self.translate_pl(text)
         return text
 
-    def translate_pl(self, text):
-        return TranslateLibTranslator(to_lang='pl').translate(text)
+    def translate_pl(self, text_list):
+        t=TranslateLibTranslator(to_lang='pl')
+        translated_text = []
+        for text in text_list:
+            translated_text.append(t.translate(text))
+        return translated_text
