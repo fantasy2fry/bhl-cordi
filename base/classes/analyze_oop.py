@@ -1,12 +1,13 @@
 import ast
 import os
 
-from base.classes.counter_mistakes import CounterMistakes
+from counter_mistakes import CounterMistakes
 
-tab_topic = []
-tab_file_name = []
-tab_description = []
-tab_solution = []
+
+# tab_topic = []
+# tab_file_name = []
+# tab_description = []
+# tab_solution = []
 
 
 class HermetyzacjaVisitor(ast.NodeVisitor):
@@ -107,7 +108,7 @@ class DependencyMapper(ast.NodeVisitor):
             tree = ast.parse(content)
             self.visit(tree)
 
-    def analyze_directory(self, directory):
+    def analyze_directory(self, directory, tab_topic, tab_file_name, tab_description, tab_solution):
         for root, dirs, files in os.walk(directory):
             for file in files:
                 if file.endswith('.py'):
@@ -120,17 +121,18 @@ class DependencyMapper(ast.NodeVisitor):
                         tree = ast.parse(content)
                         self.visit(tree)
 
-        self.check_diamond_inheritance()
-        self.report_super_usage()
-        self.check_polymorphism()
-        self.check_static_variables()
-        self.check_complex_inheritance()
-        self.check_abstract_implementations()  # Upewnij się, że ta linia istnieje
+        self.check_diamond_inheritance(tab_topic, tab_file_name, tab_description, tab_solution)
+        self.report_super_usage(tab_topic, tab_file_name, tab_description, tab_solution)
+        self.check_polymorphism(tab_topic, tab_file_name, tab_description, tab_solution)
+        self.check_static_variables(tab_topic, tab_file_name, tab_description, tab_solution)
+        self.check_complex_inheritance(tab_topic, tab_file_name, tab_description, tab_solution)
+        self.check_abstract_implementations(tab_topic, tab_file_name, tab_description,
+                                            tab_solution)  # Upewnij się, że ta linia istnieje
 
         for topic, description in zip(tab_topic, tab_description):
             print(f"{topic}: {description}")
 
-    def check_abstract_implementations(self):
+    def check_abstract_implementations(self, tab_topic, tab_file_name, tab_description, tab_solution):
         for class_name, class_info in self.classes.items():
             if not class_info['is_abstract']:
                 for base in class_info['base_classes']:
@@ -142,7 +144,7 @@ class DependencyMapper(ast.NodeVisitor):
                             tab_description.append(
                                 f"Class '{class_name}' does not implement all abstract methods from its base class '{base}'. Missing methods: {', '.join(missing_methods)}")
 
-    def check_diamond_inheritance(self):
+    def check_diamond_inheritance(self, tab_topic, tab_file_name, tab_description, tab_solution):
         for base_class, derived_classes in self.inheritance_tree.items():
             if len(derived_classes) > 1:
                 common_bases = set()
@@ -155,7 +157,7 @@ class DependencyMapper(ast.NodeVisitor):
 
                     # print(f"Diamond inheritance detected: {base_class} is a common base class for {derived_classes}")
 
-    def report_super_usage(self):
+    def report_super_usage(self, tab_topic, tab_file_name, tab_description, tab_solution):
         for class_name, class_info in self.classes.items():
             if not class_info["uses_super"] and class_info["base_classes"]:
                 tab_topic.append("Not using the super() function")
@@ -165,7 +167,7 @@ class DependencyMapper(ast.NodeVisitor):
                 # print(
                 #     f"The {class_name} class inherits from {class_info['base_classes']} and does not use super() in the constructor.")
 
-    def check_polymorphism(self):
+    def check_polymorphism(self, tab_topic, tab_file_name, tab_description, tab_solution):
         for class_name, class_info in self.classes.items():
             base_classes = class_info["base_classes"]
             for base in base_classes:
@@ -190,7 +192,7 @@ class DependencyMapper(ast.NodeVisitor):
             self.classes[self.current_class]["class_vars"].add(var_name)
         self.generic_visit(node)
 
-    def check_static_variables(self):
+    def check_static_variables(self, tab_topic, tab_file_name, tab_description, tab_solution):
         for class_name, class_info in self.classes.items():
             if "class_vars" in class_info:
                 for var in class_info["class_vars"]:
@@ -201,7 +203,7 @@ class DependencyMapper(ast.NodeVisitor):
         # for topic, description in zip(tab_topic, tab_description):
         #     print(f"{topic}: {description}")
 
-    def check_complex_inheritance(self):
+    def check_complex_inheritance(self, tab_topic, tab_file_name, tab_description, tab_solution):
         for class_name, class_info in self.classes.items():
             base_classes = class_info["base_classes"]
             inheritance_depth = self.get_inheritance_depth(class_name, base_classes,
@@ -221,22 +223,48 @@ class DependencyMapper(ast.NodeVisitor):
                 max_depth = max(max_depth, new_depth)
         return max_depth
 
-    def return_tabs(self):
-        return tab_topic, tab_file_name, tab_description
+
+class BasicAnalyserOOP:
+    def __init__(self, directory_path, user_id):
+        self.directory_path = directory_path
+        self.tab_topic = []
+        self.tab_file_name = []
+        self.tab_description = []
+        self.tab_solution = []
+        self.user_id = user_id
+
+        mapper = DependencyMapper()
+        mapper.analyze_directory(directory_path, self.tab_topic, self.tab_file_name, self.tab_description,
+                                 self.tab_solution)
+
+        new_counter = CounterMistakes(self.user_id)
+        new_counter.count_mistakes(self.tab_topic, self.tab_file_name, self.tab_description)
+        dict_mistakes, file_count = new_counter.return_info()
+
+        new_counter.calculate_tan()
+        new_counter.write_to_csv()
 
 
 if __name__ == "__main__":
-    mapper = DependencyMapper()
-    directory_path = '../../additional'  # zmień na ścieżkę do twojego folderu testowego
-    mapper.analyze_directory(directory_path)
+    basic_object = BasicAnalyserOOP('../../additional', 1)
 
-    print(tab_topic)
-    # from translator import Translator
-    print(tab_file_name)
-    # print(tab_topic)
-    # print(tab_description)
-    new_counter = CounterMistakes()
-    new_counter.count_mistakes( tab_topic, tab_file_name, tab_description);
-    dict_mistakes, file_count = new_counter.return_info()
-    print(file_count)
-    print(dict_mistakes)
+
+
+    # mapper = DependencyMapper()
+    # directory_path = '../../additional'  # zmień na ścieżkę do twojego folderu testowego
+    # mapper.analyze_directory(directory_path)
+    #
+    # # print(tab_topic)
+    # # from translator import Translator
+    # # print(tab_file_name)
+    # # print(tab_topic)
+    # # print(tab_description)
+    # new_counter = CounterMistakes(1)
+    # new_counter.count_mistakes(tab_topic, tab_file_name, tab_description)
+    # dict_mistakes, file_count = new_counter.return_info()
+    #
+    # new_counter.calculate_tan()
+    # new_counter.write_to_csv()
+    #
+    # print(file_count)
+    # print(dict_mistakes)
