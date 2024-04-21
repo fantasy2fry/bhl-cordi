@@ -16,6 +16,8 @@ class Raport:
                              filename, lang):
         # t = Translator(lang)
         # tab_description = t.translate(tab_description)
+        # tab_solutions = t.translate(tab_solutions)
+        # tab_topic = t.translate(tab_topic)
         # print(tab_description)
 
         tab_description_dict = {}
@@ -111,20 +113,29 @@ class Raport:
 
             y_position -= 20  # Additional space after each section
 
-        # t = c.beginText()
-        # t.setTextOrigin(50, 700)
-        # t.setFont('Helvetica', 8)
-        # t.setCharSpace(1)
-        # wraped_text = "\n".join(wrap(tab_solutions[0], 120))
-        # t.textLines(tab_solutions[0])
-        # c.showPage()
-        # c.drawText(t)
+        t = c.beginText()
+        t.setTextOrigin(50, 700)
+        t.setFont('Helvetica', 8)
+        t.setCharSpace(1)
+        wraped_text = "\n".join(wrap(tab_solutions[0], 120))
+        t.textLines(tab_solutions[0])
+        c.showPage()
+        c.drawText(t)
+
+        for solution in tab_solutions:
+            # Check if there's enough space for the current line
+            if y_position < 50:
+                c.showPage()  # Start a new page
+                c.setFillColor(HexColor(0x0096C7))
+                c.setFont("Helvetica", 8)  # Reset font
+                y_position = text_height  # Reset y_position
+            t.textLines(solution)
+            c.drawText(t)
 
         c.save()
         print("PDF created successfully!")
 
     def wrap_text(self, text, max_width):
-        import math
         words = text.split()
         lines = []
         current_line = []
