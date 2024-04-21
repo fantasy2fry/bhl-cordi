@@ -1,6 +1,8 @@
 import ast
 import os
 
+from base.classes.counter_mistakes import CounterMistakes
+
 tab_topic = []
 tab_file_name = []
 tab_description = []
@@ -219,6 +221,9 @@ class DependencyMapper(ast.NodeVisitor):
                 max_depth = max(max_depth, new_depth)
         return max_depth
 
+    def return_tabs(self):
+        return tab_topic, tab_file_name, tab_description
+
 
 if __name__ == "__main__":
     mapper = DependencyMapper()
@@ -227,6 +232,11 @@ if __name__ == "__main__":
 
     print(tab_topic)
     # from translator import Translator
-    #print(tab_file_name)
+    print(tab_file_name)
     # print(tab_topic)
     # print(tab_description)
+    new_counter = CounterMistakes()
+    new_counter.count_mistakes( tab_topic, tab_file_name, tab_description);
+    dict_mistakes, file_count = new_counter.return_info()
+    print(file_count)
+    print(dict_mistakes)
