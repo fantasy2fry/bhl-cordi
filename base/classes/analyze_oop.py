@@ -156,7 +156,24 @@ class DependencyMapper(ast.NodeVisitor):
                     tab_description.append(
                         f"{base_class} is a common base class for {derived_classes}")
 
-                    # print(f"Diamond inheritance detected: {base_class} is a common base class for {derived_classes}")
+                    example_init = "\n".join(
+                        f"class {derived}({', '.join(self.classes[derived]['base_classes'])}):\n"
+                        "    def __init__(self, *args, **kwargs):\n"
+                        "        super().__init__(*args, **kwargs)  # Correctly initialize parent classes\n"
+                        "        # Initialize any additional attributes for this class here\n"
+                        for derived in derived_classes
+                    )
+
+                    solution_text = (
+                        f"To resolve diamond inheritance involving '{base_class}', ensure all derived classes use cooperative multiple inheritance "
+                        "with 'super()'. This approach ensures each class in the hierarchy is initialized exactly once. Below is an example of how to correctly implement constructors in derived classes:\n"
+                        f"{example_init}"
+                        "Additionally, consider redesigning the class hierarchy to reduce complexity or ambiguity, potentially eliminating the need for multiple inheritance."
+                    )
+
+                    tab_solution.append(solution_text)
+
+                # print(f"Diamond inheritance detected: {base_class} is a common base class for {derived_classes}")
 
     def report_super_usage(self, tab_topic, tab_file_name, tab_description, tab_solution):
         for class_name, class_info in self.classes.items():
@@ -253,3 +270,5 @@ def get_mac_address():
 
 if __name__ == "__main__":
     basic_object = BasicAnalyserOOP('../../additional', get_mac_address())
+
+    print(basic_object.tab_solution)
