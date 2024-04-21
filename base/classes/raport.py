@@ -1,6 +1,6 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-
+import re
 
 class Raport:
     def create_pdf_from_text(self, tab_topic, tab_description, filename):
@@ -32,37 +32,40 @@ class Raport:
 
             c.setFont("Helvetica", 12)
             for desc in descriptions:
-                lines = self.wrap_text(desc, max_width=500)  # Adjust max_width as needed
-                for line in lines:
-                    if y_position < 50:
-                        c.showPage()
-                        c.setFont("Helvetica", 12)
-                        y_position = text_height
-                    c.drawString(50, y_position, line)
-                    y_position -= 15
+                self.draw_text_with_bold(desc, c, y_position)
+                y_position -= 15
 
             y_position -= 20  # Additional space after each section
 
         c.save()
         print("PDF created successfully!")
 
-    def wrap_text(self, text, max_width=500):
-        words = text.split()
-        lines = []
-        current_line = []
+    def draw_text_with_bold(self, text, canvas_obj, y_position):
+        font = "Helvetica"
+        font_size = 12
+        bold_font_size = 12
+        x_position = 50  # Starting x-coordinate for drawing text
 
-        for word in words:
-            if current_line and self.get_text_width(' '.join(current_line + [word])) <= max_width:
-                current_line.append(word)
+        parts = re.findall(r"'([^']+)'|[^']+", text)
+
+        for part in parts:
+            if part.startswith("'") and part.endswith("'"):  # Enclosed in single quotes (to be bold)
+                # Set font to bold
+                canvas_obj.setFont(font + "-Bold", bold_font_size)
+                # Draw the bold text
+                canvas_obj.drawString(x_position, y_position, part.strip("'"))
+                # Calculate the width of the bold text
+                text_width = canvas_obj.stringWidth(part.strip("'"), font + "-Bold", bold_font_size)
             else:
-                if current_line:
-                    lines.append(' '.join(current_line))
-                current_line = [word]
+                # Set font to regular
+                canvas_obj.setFont(font, font_size)
+                # Draw the regular text
+                canvas_obj.drawString(x_position, y_position, part)
+                # Calculate the width of the regular text
+                text_width = canvas_obj.stringWidth(part, font, font_size)
 
-        if current_line:
-            lines.append(' '.join(current_line))
-
-        return lines
+            # Update x_position to move to the end of the drawn text
+            x_position += text_width
 
     def get_text_width(self, text):
         c = canvas.Canvas("tmp.pdf")
@@ -71,9 +74,12 @@ class Raport:
 
 if __name__ == "__main__":
     from analyze_oop import *
-
-    mapper = DependencyMapper()
-    directory_path = '../../additional'  # zmień na ścieżkę do twojego folderu testowego
-    mapper.analyze_directory(directory_path)
+    basic_object = BasicAnalyserOOP('../../additional', 1)
     raport = Raport()
-    raport.create_pdf_from_text(tab_topic, tab_description, "raport.pdf")
+    print("\n")
+    print(basic_object.tab_topic)
+    print("\n")
+    print(basic_object.tab_description)
+    print("\n")
+
+    raport.create_pdf_from_text(basic_object.tab_topic, basic_object.tab_description, "raport.pdf")
