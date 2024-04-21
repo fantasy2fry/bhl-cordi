@@ -1,6 +1,6 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-import re
+
 
 class Raport:
     def create_pdf_from_text(self, tab_topic, tab_description, filename):
@@ -19,26 +19,59 @@ class Raport:
         text_height = 750
         y_position = text_height
 
-        # Add title to the PDF document
+        # Add title to the first page
         c.setFont("Helvetica-Bold", 16)  # Larger font size for the title
         title = "File content analysis"
         c.drawCentredString(letter[0] / 2, y_position, title)
         y_position -= 40
 
         for topic, descriptions in sections:
+            # Check if there's enough space for the section title
+            if y_position < 50:
+                c.showPage()  # Start a new page
+                c.setFont("Helvetica", 12)  # Reset font
+                y_position = text_height  # Reset y_position
+
             c.setFont("Helvetica-Bold", 14)
             c.drawString(50, y_position, topic)
             y_position -= 20
 
             c.setFont("Helvetica", 12)
             for desc in descriptions:
-                self.draw_text_with_bold(desc, c, y_position)
-                y_position -= 15
+                lines = self.wrap_text(desc, max_width=500)  # Adjust max_width as needed
+                for line in lines:
+                    # Check if there's enough space for the current line
+                    if y_position < 50:
+                        c.showPage()  # Start a new page
+                        c.setFont("Helvetica", 12)  # Reset font
+                        y_position = text_height  # Reset y_position
+
+                    self.draw_text_with_bold(line, c, y_position)
+                    y_position -= 15
 
             y_position -= 20  # Additional space after each section
 
         c.save()
         print("PDF created successfully!")
+
+    def wrap_text(self, text, max_width):
+        import math
+        words = text.split()
+        lines = []
+        current_line = []
+
+        for word in words:
+            if current_line and self.get_text_width(' '.join(current_line + [word])) <= max_width:
+                current_line.append(word)
+            else:
+                if current_line:
+                    lines.append(' '.join(current_line))
+                current_line = [word]
+
+        if current_line:
+            lines.append(' '.join(current_line))
+
+        return lines
 
     def draw_text_with_bold(self, text, canvas_obj, y_position):
         font = "Helvetica"
@@ -46,26 +79,37 @@ class Raport:
         bold_font_size = 12
         x_position = 50  # Starting x-coordinate for drawing text
 
-        parts = re.findall(r"'([^']+)'|[^']+", text)
+        in_quotes = False
+        word_buffer = ""
 
-        for part in parts:
-            if part.startswith("'") and part.endswith("'"):  # Enclosed in single quotes (to be bold)
-                # Set font to bold
-                canvas_obj.setFont(font + "-Bold", bold_font_size)
-                # Draw the bold text
-                canvas_obj.drawString(x_position, y_position, part.strip("'"))
-                # Calculate the width of the bold text
-                text_width = canvas_obj.stringWidth(part.strip("'"), font + "-Bold", bold_font_size)
+        for char in text:
+            if char == "'":
+                if in_quotes:
+                    # End of quoted word, draw bold text
+                    canvas_obj.setFont(font + "-Bold", bold_font_size)
+                    canvas_obj.drawString(x_position, y_position, word_buffer)
+                    x_position += canvas_obj.stringWidth(word_buffer, font + "-Bold", bold_font_size)
+                    word_buffer = ""
+                in_quotes = not in_quotes  # Toggle in_quotes flag
             else:
-                # Set font to regular
-                canvas_obj.setFont(font, font_size)
-                # Draw the regular text
-                canvas_obj.drawString(x_position, y_position, part)
-                # Calculate the width of the regular text
-                text_width = canvas_obj.stringWidth(part, font, font_size)
+                if in_quotes:
+                    # Inside quoted word, accumulate characters
+                    word_buffer += char
+                else:
+                    # Outside quoted word, draw regular text
+                    canvas_obj.setFont(font, font_size)
+                    canvas_obj.drawString(x_position, y_position, char)
+                    x_position += canvas_obj.stringWidth(char, font, font_size)
 
-            # Update x_position to move to the end of the drawn text
-            x_position += text_width
+        # Draw any remaining text after loop ends
+        if word_buffer:
+            if in_quotes:
+                # Remaining word is in quotes, draw as bold
+                canvas_obj.setFont(font + "-Bold", bold_font_size)
+            else:
+                # Remaining word is not in quotes, draw as regular
+                canvas_obj.setFont(font, font_size)
+            canvas_obj.drawString(x_position, y_position, word_buffer)
 
     def get_text_width(self, text):
         c = canvas.Canvas("tmp.pdf")
@@ -76,10 +120,5 @@ if __name__ == "__main__":
     from analyze_oop import *
     basic_object = BasicAnalyserOOP('../../additional', 1)
     raport = Raport()
-    print("\n")
-    print(basic_object.tab_topic)
-    print("\n")
-    print(basic_object.tab_description)
-    print("\n")
 
     raport.create_pdf_from_text(basic_object.tab_topic, basic_object.tab_description, "raport.pdf")
