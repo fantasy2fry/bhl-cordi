@@ -3,6 +3,7 @@ from reportlab.pdfgen import canvas
 from translator import Translator
 from operator import itemgetter
 from reportlab.lib.colors import HexColor
+from textwrap import wrap
 import re
 
 
@@ -14,7 +15,7 @@ class Raport:
                              xss_detector_description, xss_detector_detailed_description, tab_solutions,
                              filename, lang):
         # t = Translator(lang)
-        # tab_description = t.translate_with_exclusions(tab_description, self.extract_words_from_description(" ".join(tab_description)))
+        # tab_description = t.translate(tab_description)
         # print(tab_description)
 
         tab_description_dict = {}
@@ -111,9 +112,12 @@ class Raport:
             y_position -= 20  # Additional space after each section
 
         # t = c.beginText()
-        # t.setFont('Helvetica-Bold', 6)
-        # t.setCharSpace(3)
-        # t.textLine(tab_solutions[0])
+        # t.setTextOrigin(50, 700)
+        # t.setFont('Helvetica', 8)
+        # t.setCharSpace(1)
+        # wraped_text = "\n".join(wrap(tab_solutions[0], 120))
+        # t.textLines(tab_solutions[0])
+        # c.showPage()
         # c.drawText(t)
 
         c.save()
