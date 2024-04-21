@@ -1,18 +1,33 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from translator import Translator
+from operator import itemgetter
 import re
 
 
 class Raport:
-    def create_pdf_from_text(self, tab_topic, tab_description, filename, lang):
+    def create_pdf_from_text(self, tab_topic, tab_description, det_description, det_detailed_descriptor, filename, lang):
+        # t = Translator(lang)
+        # tab_description = t.translate_with_exclusions(tab_description, self.extract_words_from_description(" ".join(tab_description)))
+        # print(tab_description)
+
         tab_description_dict = {}
         for topic, desc in zip(tab_topic, tab_description):
             if topic not in tab_description_dict:
                 tab_description_dict[topic] = []
             tab_description_dict[topic].append(desc)
+        for topic, desc in zip(det_description, list(map(itemgetter(0), det_detailed_descriptor))):
+            if topic not in tab_description_dict:
+                tab_description_dict[topic] = []
+            tab_description_dict[topic].append(desc)
+
         sections = list(tab_description_dict.items())  # Convert dict items to list of tuples
+        print(tab_description_dict)
         self._generate_pdf(sections, filename)
+
+    def extract_words_from_description(self, tab_description):
+        words = re.findall(r"'(\w+)'", tab_description)
+        return words
 
     def _generate_pdf(self, sections, filename):
         c = canvas.Canvas(filename, pagesize=letter)
@@ -130,9 +145,13 @@ class Raport:
 
 if __name__ == "__main__":
     from analyze_oop import *
+    from analyze_vuln import SQLInjectionDetector
     basic_object = BasicAnalyserOOP('../../additional', 1)
+    detector = SQLInjectionDetector()
+    detector.analyze_directory('../../additional')
+
     raport = Raport()
 
     print(basic_object.tab_description)
 
-    raport.create_pdf_from_text(basic_object.tab_topic, basic_object.tab_description, "raport.pdf", "ru")
+    raport.create_pdf_from_text(basic_object.tab_topic, basic_object.tab_description, detector.description, detector.detailed_description, "raport.pdf", "ru")
