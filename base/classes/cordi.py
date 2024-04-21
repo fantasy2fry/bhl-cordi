@@ -1,6 +1,7 @@
 from analyze_oop import *
 from generate_employee_plots import *
 from raport import Raport
+from analyze_vuln import SQLInjectionDetector, CSRFDetector, XSSDetector, InsecureDeserializationDetector
 import uuid
 
 
@@ -24,8 +25,22 @@ class Cordi:
     def run(self):
         if self.type_of_report == "basic_report":
             basic_object = BasicAnalyserOOP(self.folder, self.get_mac_address())
+
+            detector = SQLInjectionDetector()
+            detector.analyze_directory(self.folder)
+            csrf = CSRFDetector()
+            csrf.analyze_directory(self.folder)
+            insecure_deserialization = InsecureDeserializationDetector()
+            insecure_deserialization.analyze_directory(self.folder)
+            xss_detector = XSSDetector()
+            xss_detector.analyze_directory(self.folder)
+
             raport = Raport()
-            raport.create_pdf_from_text(basic_object.tab_topic, basic_object.tab_description, "raport.pdf")
+            raport.create_pdf_from_text(basic_object.tab_topic, basic_object.tab_description,
+                                        detector.description, detector.detailed_description,
+                                        csrf.description, csrf.detailed_description,
+                                        insecure_deserialization.description, insecure_deserialization.detailed_description,
+                                        xss_detector.description, xss_detector.detailed_description, "raport.pdf", "en")
 
         elif self.type_of_report == "plot_report":
 
