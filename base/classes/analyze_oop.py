@@ -239,7 +239,7 @@ class BasicAnalyserOOP:
 
         new_counter = CounterMistakes(self.user_id)
         new_counter.count_mistakes(self.tab_topic, self.tab_file_name, self.tab_description)
-        dict_mistakes, file_count = new_counter.return_info()
+
 
         new_counter.calculate_tan()
         new_counter.write_to_csv()
@@ -247,24 +247,3 @@ class BasicAnalyserOOP:
 
 if __name__ == "__main__":
     basic_object = BasicAnalyserOOP('../../additional', 1)
-
-
-
-    # mapper = DependencyMapper()
-    # directory_path = '../../additional'  # zmień na ścieżkę do twojego folderu testowego
-    # mapper.analyze_directory(directory_path)
-    #
-    # # print(tab_topic)
-    # # from translator import Translator
-    # # print(tab_file_name)
-    # # print(tab_topic)
-    # # print(tab_description)
-    # new_counter = CounterMistakes(1)
-    # new_counter.count_mistakes(tab_topic, tab_file_name, tab_description)
-    # dict_mistakes, file_count = new_counter.return_info()
-    #
-    # new_counter.calculate_tan()
-    # new_counter.write_to_csv()
-    #
-    # print(file_count)
-    # print(dict_mistakes)
