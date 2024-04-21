@@ -1,5 +1,6 @@
 import ast
 import os
+import uuid
 
 from counter_mistakes import CounterMistakes
 
@@ -240,10 +241,15 @@ class BasicAnalyserOOP:
         new_counter = CounterMistakes(self.user_id)
         new_counter.count_mistakes(self.tab_topic, self.tab_file_name, self.tab_description)
 
-
         new_counter.calculate_tan()
         new_counter.write_to_csv()
 
 
+def get_mac_address():
+    # Pobiera unikalny adres MAC urządzenia
+    mac = uuid.getnode()
+    return ':'.join(('%012X' % mac)[i:i + 2] for i in range(0, 12, 2))
+
+
 if __name__ == "__main__":
-    basic_object = BasicAnalyserOOP('../../additional', 1)
+    basic_object = BasicAnalyserOOP('../../additional', get_mac_address())

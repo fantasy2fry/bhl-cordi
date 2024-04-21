@@ -34,7 +34,7 @@ class CounterMistakes:
         maks = tab_mistakes[-1]
         mean = sum(tab_mistakes) / len(tab_mistakes)
         for i in range(len(tab_mistakes)):
-            y[i] = ((tab_mistakes[i]) ** 2 * maks - mean / 2) ** 2 / self.file_counter
+            y[i] = (tab_mistakes[i] * (maks - mean / 2)) / self.file_counter
 
         # calculate best tan for x from tab_mistakes and y
         x = np.array(tab_mistakes)

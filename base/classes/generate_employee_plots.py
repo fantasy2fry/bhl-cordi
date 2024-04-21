@@ -1,3 +1,5 @@
+import uuid
+
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -28,6 +30,7 @@ class GenerateEmployeePlots:
         self.filtered_data = self.data[self.data['id'] == self.employee_id]
 
     def create_combined_plot(self):
+
         if self.filtered_data is None:
             print("Data not loaded. Call load_data() first.")
             return
@@ -115,9 +118,15 @@ class GenerateEmployeePlots:
         fig.show()
 
 
+def get_mac_address():
+    # Pobiera unikalny adres MAC urządzenia
+    mac = uuid.getnode()
+    return ':'.join(('%012X' % mac)[i:i + 2] for i in range(0, 12, 2))
+
+
 # Usage of the class
-file_path = '../../data/user_analysis.csv'  # Make sure to update this path to your actual CSV file
-employee_id = 1.0  # Example employee ID
-plot_generator = GenerateEmployeePlots(employee_id, file_path)
+file_path = '../../data/user_analysis.csv'
+# employee_id = 1.0  # Example employee ID
+plot_generator = GenerateEmployeePlots(get_mac_address(), file_path)
 plot_generator.load_data()
 plot_generator.create_combined_plot()
