@@ -1,9 +1,11 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from translator import Translator
+import re
 
 
 class Raport:
-    def create_pdf_from_text(self, tab_topic, tab_description, filename):
+    def create_pdf_from_text(self, tab_topic, tab_description, filename, lang):
         tab_description_dict = {}
         for topic, desc in zip(tab_topic, tab_description):
             if topic not in tab_description_dict:
@@ -20,8 +22,13 @@ class Raport:
         y_position = text_height
 
         # Add title to the first page
-        c.setFont("Helvetica-Bold", 16)  # Larger font size for the title
+        c.setFont("Helvetica-Bold", 20)  # Larger font size for the title
         title = "File content analysis"
+        c.drawCentredString(letter[0] / 2, y_position, title)
+        y_position -= 60
+
+        c.setFont("Helvetica-Bold", 16)  # Larger font size for the title
+        title = "OOP oriented analysis"
         c.drawCentredString(letter[0] / 2, y_position, title)
         y_position -= 40
 
@@ -50,6 +57,11 @@ class Raport:
                     y_position -= 15
 
             y_position -= 20  # Additional space after each section
+
+        c.setFont("Helvetica-Bold", 16)  # Larger font size for the title
+        title = "Vulnerabilities oriented analysis"
+        c.drawCentredString(letter[0] / 2, y_position, title)
+        y_position -= 40
 
         c.save()
         print("PDF created successfully!")
@@ -121,4 +133,6 @@ if __name__ == "__main__":
     basic_object = BasicAnalyserOOP('../../additional', 1)
     raport = Raport()
 
-    raport.create_pdf_from_text(basic_object.tab_topic, basic_object.tab_description, "raport.pdf")
+    print(basic_object.tab_description)
+
+    raport.create_pdf_from_text(basic_object.tab_topic, basic_object.tab_description, "raport.pdf", "ru")
