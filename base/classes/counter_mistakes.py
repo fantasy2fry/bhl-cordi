@@ -56,6 +56,21 @@ class CounterMistakes:
             df.to_csv(where, index=False)
         else:
             df_old = pd.read_csv(where)
-            df = pd.concat([df_old, df], ignore_index=True)
-            df.to_csv(where, index=False)
+            # check if user already exists
+            if self.id_user in df_old['id'].values:
+                # update row with user
+                # add 7 rows to the row with user
+                for mistake in self.mistakes_names:
+                    df_old.loc[df_old['id'] == self.id_user, mistake] += df.loc[0, mistake]
+                df_old.loc[df_old['id'] == self.id_user, 'file_counter'] += df.loc[0, 'file_counter']
+                #update self_mistakes and file_counter
+                self.file_counter = df_old.loc[df_old['id'] == self.id_user, 'file_counter'].values[0]
+                for mistake in self.mistakes_names:
+                    self.dict_mistakes[mistake] = df_old.loc[df_old['id'] == self.id_user, mistake].values[0]
+                self.calculate_tan()
+                df_old.loc[df_old['id'] == self.id_user, 'tan'] = self.tan
+                df_old.to_csv(where, index=False)
+            else:
+                df = pd.concat([df_old, df], ignore_index=True)
+                df.to_csv(where, index=False)
 
